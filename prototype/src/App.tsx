@@ -4,11 +4,13 @@ import FoodLog from './pages/FoodLog';
 import DrinkLog from './pages/DrinkLog';
 import Pantry from './pages/Pantry';
 import Recipes from './pages/Recipes';
+import Exercise from './pages/Exercise';
 import { todayStr, formatDate } from './utils/date';
 
 const NAV = [
-  { to: '/', label: 'Dashboard', icon: '▦' },
+  { to: '/', label: 'Home', icon: '▦' },
   { to: '/food', label: 'Food', icon: '⊕' },
+  { to: '/exercise', label: 'Exercise', icon: '◈' },
   { to: '/drinks', label: 'Drinks', icon: '◎' },
   { to: '/pantry', label: 'Pantry', icon: '▤' },
   { to: '/recipes', label: 'Recipes', icon: '✦' },
@@ -17,6 +19,7 @@ const NAV = [
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Dashboard',
   '/food': 'Food Log',
+  '/exercise': 'Exercise',
   '/drinks': 'Drink Log',
   '/pantry': 'Pantry',
   '/recipes': 'Recipes',
@@ -37,6 +40,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/food" element={<FoodLog />} />
+          <Route path="/exercise" element={<Exercise />} />
           <Route path="/drinks" element={<DrinkLog />} />
           <Route path="/pantry" element={<Pantry />} />
           <Route path="/recipes" element={<Recipes />} />

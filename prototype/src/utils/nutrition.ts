@@ -1,4 +1,5 @@
-import { FoodItem, FoodLogEntry, DrinkLogEntry } from '../types';
+import { FoodItem, FoodLogEntry, DrinkLogEntry, ExerciseLogEntry } from '../types';
+import { INTENSITY_MET_MULTIPLIER } from '../data/exercises';
 
 export function calcNutrition(food: FoodItem, grams: number) {
   const f = grams / 100;
@@ -47,6 +48,21 @@ export function calcAlcoholKcal(volumeMl: number, abvPercent: number): number {
 
 export function calcMetabolicWindowHours(standardDrinks: number): number {
   return Math.round(standardDrinks * 1.5 * 10) / 10;
+}
+
+// kcal = MET × weight_kg × duration_hours × intensity_multiplier
+export function calcExerciseKcal(
+  met: number,
+  weightKg: number,
+  durationMin: number,
+  intensity: string
+): number {
+  const multiplier = INTENSITY_MET_MULTIPLIER[intensity] ?? 1.0;
+  return Math.round(met * multiplier * weightKg * (durationMin / 60));
+}
+
+export function sumExerciseLog(entries: ExerciseLogEntry[]): number {
+  return entries.reduce((s, e) => s + e.kcalBurned, 0);
 }
 
 export function sumDrinkLog(entries: DrinkLogEntry[]) {

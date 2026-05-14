@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useApp } from '../store/AppContext';
 import { todayStr } from '../utils/date';
-import { sumFoodLog, sumDrinkLog, calcGlycemicLoad } from '../utils/nutrition';
+import { sumFoodLog, sumDrinkLog, sumExerciseLog, calcGlycemicLoad } from '../utils/nutrition';
 import { computeFlags } from '../utils/flags';
 
 export default function Dashboard() {
@@ -16,9 +16,14 @@ export default function Dashboard() {
     () => state.drinkLog.filter((e) => e.date === today),
     [state.drinkLog, today]
   );
+  const todayExercise = useMemo(
+    () => state.exerciseLog.filter((e) => e.date === today),
+    [state.exerciseLog, today]
+  );
 
   const foodTotals = useMemo(() => sumFoodLog(todayFood), [todayFood]);
   const drinkSummary = useMemo(() => sumDrinkLog(todayDrinks), [todayDrinks]);
+  const kcalOut = useMemo(() => sumExerciseLog(todayExercise), [todayExercise]);
   const gl = useMemo(() => calcGlycemicLoad(todayFood), [todayFood]);
 
   const flags = useMemo(
@@ -34,9 +39,10 @@ export default function Dashboard() {
   );
 
   const { kcalTarget, proteinTargetG } = state.settings;
-  const kcalPct = Math.min((foodTotals.kcal / kcalTarget) * 100, 100);
-  const surplus = foodTotals.kcal - kcalTarget;
-  const totalKcal = foodTotals.kcal + drinkSummary.kcal;
+  const totalKcalIn = foodTotals.kcal + drinkSummary.kcal;
+  const netKcal = totalKcalIn - kcalOut;
+  const kcalPct = Math.min((netKcal / kcalTarget) * 100, 100);
+  const surplus = netKcal - kcalTarget;
   const totalCarbs = foodTotals.carbs;
   const totalFat = foodTotals.fat;
   const totalFiber = foodTotals.fiber;
@@ -47,12 +53,18 @@ export default function Dashboard() {
       <div className="card">
         <div className="card-title">Today's snapshot</div>
         <div className="kcal-row">
-          <span className="kcal-big">{totalKcal}</span>
-          <span className="kcal-label">kcal</span>
+          <span className="kcal-big">{netKcal}</span>
+          <span className="kcal-label">net kcal</span>
           <span className="kcal-target">
             {surplus > 0 ? '+' : ''}{surplus} vs {kcalTarget} target
           </span>
         </div>
+        {kcalOut > 0 && (
+          <div style={{ display: 'flex', gap: 16, fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
+            <span>{totalKcalIn} in</span>
+            <span style={{ color: 'var(--positive)' }}>−{kcalOut} exercise</span>
+          </div>
+        )}
         <div className="progress-bar mt-8">
           <div
             className="progress-fill"
@@ -191,6 +203,10 @@ export default function Dashboard() {
           <label>Protein target</label>
           <ProteinInput />
         </div>
+        <div className="settings-row">
+          <label>Body weight (for exercise kcal)</label>
+          <WeightInput />
+        </div>
       </div>
     </>
   );
@@ -242,6 +258,23 @@ function ProteinInput() {
         dispatch({
           type: 'UPDATE_SETTINGS',
           settings: { proteinTargetG: Math.max(10, parseInt(e.target.value) || 0) },
+        })
+      }
+    />
+  );
+}
+
+function WeightInput() {
+  const { state, dispatch } = useApp();
+  return (
+    <input
+      type="number"
+      value={state.settings.weightKg}
+      style={{ width: 90, textAlign: 'right' }}
+      onChange={(e) =>
+        dispatch({
+          type: 'UPDATE_SETTINGS',
+          settings: { weightKg: Math.max(30, parseFloat(e.target.value) || 80) },
         })
       }
     />

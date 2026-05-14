@@ -84,4 +84,26 @@ export interface UserSettings {
   kcalTarget: number;
   proteinTargetG: number;
   goalMode: GoalMode;
+  weightKg: number;
+}
+
+export type ExerciseCategory = 'cardio' | 'strength' | 'sports' | 'flexibility';
+export type ExerciseIntensity = 'light' | 'moderate' | 'intense';
+
+export interface ExerciseItem {
+  id: string;
+  name: string;
+  category: ExerciseCategory;
+  met: number;
+}
+
+export interface ExerciseLogEntry {
+  id: string;
+  date: string;
+  exerciseId: string;
+  exerciseName: string;
+  durationMin: number;
+  intensity: ExerciseIntensity;
+  kcalBurned: number;
+  timestamp: number;
 }

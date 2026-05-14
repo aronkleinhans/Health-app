@@ -3,18 +3,23 @@ import {
   FoodItem,
   FoodLogEntry,
   DrinkLogEntry,
+  ExerciseLogEntry,
+  ExerciseItem,
   PantryItem,
   Recipe,
   UserSettings,
 } from '../types';
 import { FOOD_DATABASE } from '../data/foods';
+import { EXERCISE_DATABASE } from '../data/exercises';
 import { todayStr, uid } from '../utils/date';
 import { calcNutrition, calcStandardDrinks, calcAlcoholKcal } from '../utils/nutrition';
 
 interface AppState {
   foodItems: FoodItem[];
+  exerciseItems: ExerciseItem[];
   foodLog: FoodLogEntry[];
   drinkLog: DrinkLogEntry[];
+  exerciseLog: ExerciseLogEntry[];
   pantry: PantryItem[];
   recipes: Recipe[];
   settings: UserSettings;
@@ -25,6 +30,8 @@ type Action =
   | { type: 'REMOVE_FOOD_LOG'; id: string }
   | { type: 'ADD_DRINK_LOG'; entry: Omit<DrinkLogEntry, 'id' | 'timestamp'> }
   | { type: 'REMOVE_DRINK_LOG'; id: string }
+  | { type: 'ADD_EXERCISE_LOG'; entry: Omit<ExerciseLogEntry, 'id' | 'timestamp'> }
+  | { type: 'REMOVE_EXERCISE_LOG'; id: string }
   | { type: 'ADD_PANTRY'; item: Omit<PantryItem, 'id' | 'addedAt'> }
   | { type: 'REMOVE_PANTRY'; id: string }
   | { type: 'UPDATE_PANTRY'; id: string; quantityGrams: number }
@@ -148,14 +155,17 @@ function buildSeedState(): AppState {
 
   return {
     foodItems: FOOD_DATABASE,
+    exerciseItems: EXERCISE_DATABASE,
     foodLog: seedFoodLog,
     drinkLog: [],
+    exerciseLog: [],
     pantry: seedPantry,
     recipes: seedRecipes,
     settings: {
       kcalTarget: 2200,
       proteinTargetG: 160,
       goalMode: 'maintain',
+      weightKg: 80,
     },
   };
 }
@@ -186,6 +196,13 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case 'REMOVE_DRINK_LOG':
       return { ...state, drinkLog: state.drinkLog.filter((e) => e.id !== action.id) };
+    case 'ADD_EXERCISE_LOG':
+      return {
+        ...state,
+        exerciseLog: [...state.exerciseLog, { ...action.entry, id: uid(), timestamp: Date.now() }],
+      };
+    case 'REMOVE_EXERCISE_LOG':
+      return { ...state, exerciseLog: state.exerciseLog.filter((e) => e.id !== action.id) };
     case 'ADD_PANTRY':
       return {
         ...state,
